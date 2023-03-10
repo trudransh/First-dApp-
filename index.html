@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My First dApp</title>
+    
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"> </script>
+
+    <script>
+        const MoodContractAddress = "0x4C171419126eE815207454330d97E50463Dd93a1";  // THe address of the smart contract that i have deployed on goereli testnet 
+        const MoodContractABI = [  // The ABi of the contract from which my frontend can interact with it 
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_mood",
+				"type": "string"
+			}
+		],
+		"name": "setMood",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getMood",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+  let MoodContract;
+  let signer;
+  const provider = new ethers.providers.Web3Provider(window.ethereum, "goerli");  // this is the provider tha is json RPC provider which will provide us the endpoints to connect to blockchain.
+  // ********* -----  Down below ↓↓↓   is the provider will send you request to connect your frontedn to the provider and the empty array tells that there is no additional provider that is already there inn existence ----- ************* 
+  provider.send("eth_requestAccounts", []).then(() => {  // the .then method is a callback function that calls that fethces the list of accounts which are connected to the current web3 provider
+  provider.listAccounts().then((accounts) => {  // This will list you the accounts that are on there in web3 provider so you must select which one you ean t to select
+  signer = provider.getSigner(accounts[0]); // This code retrieves an Ethereum account's "Signer" object associated with the Ethereum address stored in the accounts array at index 0.
+  MoodContract = new ethers.Contract(   // This here creates and instance of the smartcontract which is named as MoodContract and then takes three parameters which are smart contract address and the contract abi and finally basically signer signs transactions for you by providing an interface .
+      MoodContractAddress,
+      MoodContractABI,
+      signer
+    );
+  });
+});
+async function getMood() {
+  const getMoodPromise = MoodContract.getMood();  // Here we are calling the getMood() function that are there in our smart conytract.
+  const Mood = await getMoodPromise;  // this is just an example of asynchronous process that is untill the await promise is completed and returns something the asynnc function will be on hold this prevents from call back hell.
+  document.getElementById("showMood").innerText = `Your Mood: ${Mood}`; // **** Here we have shown that whenever you will click getModd this para will appear in html and it will show "Your Mood: `$whatever you  have ste your mood to`"
+  console.log(Mood); // returned the mood to console
+}
+
+async function setMood() { // for setting the mood we have created this function
+  const mood = document.getElementById("mood").value;  // this will get the mood value you have entered in the input box
+  const setMoodPromise = MoodContract.setMood(mood);  // this will set the value to the mood you entered now rememberr the signer we have created that will start its working it will pop up a transaction for you and then you have to confirm it.
+  await setMoodPromise; // async process 
+}
+    </script>
+    
+    
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+    
+      div {
+        width: 80%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+    
+      button {
+        width: 100%;
+        margin: 10px 0px 5px 0px;
+      }
+
+      @media only screen and (min-width: 768px) {
+  /* On larger screens, make the div narrower and center it horizontally */
+  div {
+    width: 50%;
+    margin: 0 auto;
+  }
+}
+
+    </style>
+  </head>
+  <body>
+    <div>
+        <h1>This is my dApp!</h1>
+        <p>Here we can set or get the mood:</p>
+        <label for="mood">Input Mood:</label> <br />
+        <input type="text" id="mood" />
+        <div>
+          <button onclick="setMood()">Set Mood</button>
+          <button onclick="getMood()">Get Mood</button>
+          <p id="showMood"></p>
+        </div>
+      </div>
+     <script>
+      // This code adds a click event listener to the "Get Mood" button. When clicked, it calls the getMood function.
+      document.getElementById("getMood").addEventListener("click", getmood);
+  
+      // This code adds a click event listener to the "Set Mood" button. When clicked, it calls the setMood function.
+      document.getElementById("setMood").addEventListener("click", setmood);
+      </script>
+    </body>
+</html>
